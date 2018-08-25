@@ -12,10 +12,16 @@ class Chart extends Component {
       height: props.height,
       fsym: props.fsym || `ALIS`,
       tsym: props.tsym || `JPY`,
-      span: props.span || `day`
+      span: props.span,
+      unit: props.unit,
+      toTs: props.toTs,
+      aggregate: props.aggregate,
+      borderColor: props.borderColor,
+      limit: props.limit,
+      timezone: props.timezone,
+      date: props.date
     }
     this.init = false
-    console.log(this.state);
   }
   componentDidMount(){
     this.getData()
@@ -24,13 +30,13 @@ class Chart extends Component {
     let state = {}
     let changed = false
     let resized = false
-    for(let v of [`fsym`, `tsym`, `span`]){
+    for(let v of [`fsym`, `tsym`, `span`, `unit`, `toTs`, `aggregate`, `limit`, `timezone`]){
       if(this.props[v] !== props[v]){
 	state[v] = props[v]
 	changed = true
       }
     }
-    for(let v of [`width`, `height`]){
+    for(let v of [`width`, `height`, `borderColor`]){
       if(this.props[v] !== props[v]){
 	state[v] = props[v]
 	resized = true
@@ -60,8 +66,19 @@ class Chart extends Component {
       year: {limit: 365, aggregate: 1, unit: `day`},
       all: {limit: 400, aggregate: 7, unit: `day`}
     }
-    const conf = spans[span]
-    let url = `https://min-api.cryptocompare.com/data/histo${conf.unit}?fsym=${fsym}&tsym=${tsym}&limit=${conf.limit}&aggregate=${conf.aggregate}`
+    let conf, url
+    if(span != undefined){
+      conf = spans[span]
+      url = `https://min-api.cryptocompare.com/data/histo${conf.unit}?fsym=${fsym}&tsym=${tsym}&limit=${conf.limit}&aggregate=${conf.aggregate}`
+    }else{
+      conf = {
+	unit: this.state.unit || `minute`,
+	toTs:this.state.toTs || Math.floor(Date.now() / 1000),
+	aggregate: this.state.aggregate || 10,
+	limit: this.state.limit || (24 * 6)
+      }
+      url = `https://min-api.cryptocompare.com/data/histo${conf.unit}?fsym=${fsym}&tsym=${tsym}&limit=${conf.limit}&aggregate=${conf.aggregate}&toTs=${conf.toTs}`
+    }
     fetch(url).then(res => res.json())
       .then((json)=>{
 	if(json.Type != undefined && json.Type !== 1){
@@ -80,12 +97,16 @@ class Chart extends Component {
     const span = this.state.span
     const data = this.state.data
     const id = this.props.id || 'crypto-chart'
-    var ctx = document.getElementById(this.props.id)
+    let offset = 0
+    if(this.state.timezone != undefined){
+      offset = new Date().getTimezoneOffset() - moment.tz.zone(this.state.timezone).parse(Date.UTC())
+    }
+    var ctx = document.getElementById(id)
     let dd = []
     let lbs = []
     for(let v of data.Data){
       dd.push(v.close)
-      lbs.push(v.time * 1000)
+      lbs.push((v.time * 1000) + (offset * 60 * 1000))
     }
     
     try{this.myChart.destroy()}catch(e){}
@@ -105,7 +126,7 @@ class Chart extends Component {
 	datasets: [
 	  { 
             data: dd,
-            borderColor: `#3e95cd`
+            borderColor: this.state.borderColor || `#3e95cd`
 	  }
 	]
       },
@@ -144,8 +165,14 @@ class Chart extends Component {
     }else{
       canvas = (<canvas id={id} width={this.state.width} height={this.state.height}></canvas>)
     }
+    let wrapper_id = this.props.wrapper_id || `${id}-wrapper`
+    let style = this.props.style
+    style.overflow = `hidden`
+    style.display = `inline-block`
+    style.width = this.state.width
+    style.height = this.state.height
     return (
-      <div id={`${id}-wrap`} style={{display: 'inline-block',width: this.state.width,height: this.state.height}}>
+      <div id={wrapper_id} style={style}>
 	{canvas}
       </div>
     )

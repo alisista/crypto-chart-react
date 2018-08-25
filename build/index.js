@@ -43,10 +43,16 @@ var Chart = function (_Component) {
       height: props.height,
       fsym: props.fsym || "ALIS",
       tsym: props.tsym || "JPY",
-      span: props.span || "day"
+      span: props.span,
+      unit: props.unit,
+      toTs: props.toTs,
+      aggregate: props.aggregate,
+      borderColor: props.borderColor,
+      limit: props.limit,
+      timezone: props.timezone,
+      date: props.date
     };
     _this.init = false;
-    console.log(_this.state);
     return _this;
   }
 
@@ -63,7 +69,7 @@ var Chart = function (_Component) {
       var state = {};
       var changed = false;
       var resized = false;
-      var _arr = ["fsym", "tsym", "span"];
+      var _arr = ["fsym", "tsym", "span", "unit", "toTs", "aggregate", "limit", "timezone"];
       for (var _i = 0; _i < _arr.length; _i++) {
         var v = _arr[_i];
         if (this.props[v] !== props[v]) {
@@ -71,7 +77,7 @@ var Chart = function (_Component) {
           changed = true;
         }
       }
-      var _arr2 = ["width", "height"];
+      var _arr2 = ["width", "height", "borderColor"];
       for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
         var _v = _arr2[_i2];
         if (this.props[_v] !== props[_v]) {
@@ -107,8 +113,20 @@ var Chart = function (_Component) {
         year: { limit: 365, aggregate: 1, unit: "day" },
         all: { limit: 400, aggregate: 7, unit: "day" }
       };
-      var conf = spans[span];
-      var url = "https://min-api.cryptocompare.com/data/histo" + conf.unit + "?fsym=" + fsym + "&tsym=" + tsym + "&limit=" + conf.limit + "&aggregate=" + conf.aggregate;
+      var conf = void 0,
+          url = void 0;
+      if (span != undefined) {
+        conf = spans[span];
+        url = "https://min-api.cryptocompare.com/data/histo" + conf.unit + "?fsym=" + fsym + "&tsym=" + tsym + "&limit=" + conf.limit + "&aggregate=" + conf.aggregate;
+      } else {
+        conf = {
+          unit: this.state.unit || "minute",
+          toTs: this.state.toTs || Math.floor(Date.now() / 1000),
+          aggregate: this.state.aggregate || 10,
+          limit: this.state.limit || 24 * 6
+        };
+        url = "https://min-api.cryptocompare.com/data/histo" + conf.unit + "?fsym=" + fsym + "&tsym=" + tsym + "&limit=" + conf.limit + "&aggregate=" + conf.aggregate + "&toTs=" + conf.toTs;
+      }
       fetch(url).then(function (res) {
         return res.json();
       }).then(function (json) {
@@ -129,7 +147,11 @@ var Chart = function (_Component) {
       var span = this.state.span;
       var data = this.state.data;
       var id = this.props.id || 'crypto-chart';
-      var ctx = document.getElementById(this.props.id);
+      var offset = 0;
+      if (this.state.timezone != undefined) {
+        offset = new Date().getTimezoneOffset() - _momentTimezone2.default.tz.zone(this.state.timezone).parse(Date.UTC());
+      }
+      var ctx = document.getElementById(id);
       var dd = [];
       var lbs = [];
       var _iteratorNormalCompletion = true;
@@ -141,7 +163,7 @@ var Chart = function (_Component) {
           var v = _step.value;
 
           dd.push(v.close);
-          lbs.push(v.time * 1000);
+          lbs.push(v.time * 1000 + offset * 60 * 1000);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -176,7 +198,7 @@ var Chart = function (_Component) {
           labels: lbs,
           datasets: [{
             data: dd,
-            borderColor: "#3e95cd"
+            borderColor: this.state.borderColor || "#3e95cd"
           }]
         },
         options: {
@@ -226,9 +248,15 @@ var Chart = function (_Component) {
       } else {
         canvas = _react2.default.createElement("canvas", { id: id, width: this.state.width, height: this.state.height });
       }
+      var wrapper_id = this.props.wrapper_id || id + "-wrapper";
+      var style = this.props.style;
+      style.overflow = "hidden";
+      style.display = "inline-block";
+      style.width = this.state.width;
+      style.height = this.state.height;
       return _react2.default.createElement(
         "div",
-        { id: id + "-wrap", style: { display: 'inline-block', width: this.state.width, height: this.state.height } },
+        { id: wrapper_id, style: style },
         canvas
       );
     }

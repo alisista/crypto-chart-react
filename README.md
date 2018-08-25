@@ -11,7 +11,7 @@
 
 - [Installation](#installation)
 - [Demo](#demo)
-- [Example](#example)
+- [Examples](#examples)
 - [Contributors](#contributors)
 
 
@@ -31,7 +31,7 @@ yarn add crypto-chart-react
 
 ---
 
-## Example
+## Examples
 
 ```js
 import React, { Component } from 'react'
@@ -52,6 +52,41 @@ class App extends Component {
         fsym="ALIS"
         tsym="JPY"
         span="day"
+		borderColor="#61669F"
+        />
+    )
+  }
+}
+
+render(<App />, document.getElementById("root"))
+
+```
+
+
+```js
+import React, { Component } from 'react'
+import { render } from 'react-dom'
+import CHART from '../../src'
+
+class App extends Component {
+  constructor(props){
+    super(props)
+  }
+  render(){
+    // custome span
+    return (
+      <CHART
+        id="crypto_chart"
+        height={300}
+        width={700}
+        fsym="ALIS"
+        tsym="JPY"
+		timezone="Asia/Tokyo"
+		limit={24*6}
+		style={{margin: "25px"}}
+		wrapper_id="crypto_chart_wrapper"
+		toTs={{Math.floor(Date.now() / 1000)}}
+		borderColor="#61669F"
         />
     )
   }
