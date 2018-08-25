@@ -166,7 +166,10 @@ class Chart extends Component {
       canvas = (<canvas id={id} width={this.state.width} height={this.state.height}></canvas>)
     }
     let wrapper_id = this.props.wrapper_id || `${id}-wrapper`
-    let style = this.props.style
+    let style = {}
+    for(let k of this.props.style || {}){
+      style[k] = this.props.style[k]
+    }
     style.overflow = `hidden`
     style.display = `inline-block`
     style.width = this.state.width
