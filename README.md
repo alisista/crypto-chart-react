@@ -12,7 +12,6 @@
 - [Installation](#installation)
 - [Demo](#demo)
 - [Example](#example)
-- [Logo Types](#logo-types)
 - [Contributors](#contributors)
 
 
