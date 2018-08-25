@@ -73,7 +73,7 @@ class App extends Component {
     super(props)
   }
   render(){
-    // custome span
+    // custom span
     return (
       <CHART
         id="crypto_chart"

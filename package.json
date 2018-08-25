@@ -1,6 +1,6 @@
 {
   "name": "crypto-chart-react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Cryptocurrency Price Charts logo as a React Component",
   "main": "build/index.js",
   "scripts": {
