@@ -167,7 +167,7 @@ class Chart extends Component {
     }
     let wrapper_id = this.props.wrapper_id || `${id}-wrapper`
     let style = {}
-    for(let k of this.props.style || {}){
+    for(let k in this.props.style || {}){
       style[k] = this.props.style[k]
     }
     style.overflow = `hidden`
